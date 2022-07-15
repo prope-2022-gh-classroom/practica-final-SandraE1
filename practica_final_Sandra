@@ -1,0 +1,186 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6829e909-1c59-4ef3-87a9-0e039eeb8d37",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Installing package into ‘/usr/local/lib/R/site-library’\n",
+      "(as ‘lib’ is unspecified)\n",
+      "\n",
+      "Installing package into ‘/usr/local/lib/R/site-library’\n",
+      "(as ‘lib’ is unspecified)\n",
+      "\n",
+      "Installing package into ‘/usr/local/lib/R/site-library’\n",
+      "(as ‘lib’ is unspecified)\n",
+      "\n",
+      "Installing package into ‘/usr/local/lib/R/site-library’\n",
+      "(as ‘lib’ is unspecified)\n",
+      "\n",
+      "also installing the dependencies ‘plyr’, ‘Rcpp’\n",
+      "\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Trabajo final\n",
+    "#Sandra España\n",
+    "\n",
+    "\n",
+    "install.packages(\"e1071\")\n",
+    "install.packages(\"kernlab\")\n",
+    "install.packages(\"ROCR\")\n",
+    "install.packages(\"pROC\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e28349cf-bdaf-4195-b05c-db51f5a4ca30",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "library(prob)\n",
+    "library(dplyr)\n",
+    "library(tidyverse)\n",
+    "library(readr)\n",
+    "library(e1071)\n",
+    "library(kernlab)\n",
+    "library(ROCR)\n",
+    "library(pROC)\n",
+    "library(corrplot)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "ddd0ebbc-454d-4480-96eb-059659d1209b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "datos<-read.csv(file=\"enoen_sdemt321.csv\",header=T)\n",
+    "#para este trabajo se utilizaron los datos de la Encuesta Nacional de Ocupación y Empleo publicado por el\n",
+    "#Instituto Nacional de Estadística y Geografía (INEGI) al terer trimestre de 2021.\n",
+    "#Esta base de datos ofrece una cobertura nacional de información de empleo, remuneraciones, \n",
+    "#y otras características relacionadas a nivel hogar, comunidad e individuo.\n",
+    "#Específicamente, se utilizó la base de datos a nivel individual de 428,161 participantes, en la cual\n",
+    "#se reflejan 114 variables como nivel educativo, acceso a seguridad social, remuneración, características \n",
+    "#del hogar, sexo, edad, localidad, sector de ocupación, condición de ocupación, entre otros.\n",
+    "\n",
+    "#No obstante, para efectos de esta investigación, se redujo el conjunto de datos a 15 variables y a 316,407 encuestas completadas de encuestados en edad de trabajar"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "id": "989d054f-6e4a-4ef2-85b7-5ffcfc9e2209",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "TRUE"
+      ],
+      "text/latex": [
+       "TRUE"
+      ],
+      "text/markdown": [
+       "TRUE"
+      ],
+      "text/plain": [
+       "[1] TRUE"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "      PEA         pob_ocupada        entidad           sexo      \n",
+       " Min.   :1.000   Min.   :0.0000   Min.   : 1.00   Min.   :1.000  \n",
+       " 1st Qu.:1.000   1st Qu.:0.0000   1st Qu.: 8.00   1st Qu.:1.000  \n",
+       " Median :1.000   Median :1.0000   Median :16.00   Median :2.000  \n",
+       " Mean   :1.388   Mean   :0.7986   Mean   :16.44   Mean   :1.528  \n",
+       " 3rd Qu.:2.000   3rd Qu.:1.0000   3rd Qu.:25.00   3rd Qu.:2.000  \n",
+       " Max.   :2.000   Max.   :7.0000   Max.   :32.00   Max.   :2.000  \n",
+       "                                                                 \n",
+       "      edad       escolaridad_gdo   edo_conyugal     num_hijos     \n",
+       " Min.   :16.00   Min.   : 0.000   Min.   :1.000   Min.   : 0.00   \n",
+       " 1st Qu.:27.00   1st Qu.: 3.000   1st Qu.:4.000   1st Qu.: 0.00   \n",
+       " Median :40.00   Median : 4.000   Median :5.000   Median : 2.00   \n",
+       " Mean   :42.02   Mean   : 4.074   Mean   :4.389   Mean   : 2.24   \n",
+       " 3rd Qu.:55.00   3rd Qu.: 6.000   3rd Qu.:6.000   3rd Qu.: 3.00   \n",
+       " Max.   :98.00   Max.   :99.000   Max.   :9.000   Max.   :99.00   \n",
+       "                                                  NA's   :149446  \n",
+       " con_experiencia     subocupado      horas_trabajadas ingreso_mensual \n",
+       " Min.   :0.00000   Min.   :0.00000   Min.   :  0.00   Min.   :     0  \n",
+       " 1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:  0.00   1st Qu.:     0  \n",
+       " Median :0.00000   Median :0.00000   Median : 20.00   Median :     0  \n",
+       " Mean   :0.02794   Mean   :0.07405   Mean   : 23.96   Mean   :  3154  \n",
+       " 3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.: 48.00   3rd Qu.:  5160  \n",
+       " Max.   :2.00000   Max.   :1.00000   Max.   :168.00   Max.   :172000  \n",
+       "                                                                      \n",
+       " seguridad_social actividad_SCIAN  sector_informal \n",
+       " Min.   :0.000    Min.   : 0.000   Min.   :0.0000  \n",
+       " 1st Qu.:0.000    1st Qu.: 0.000   1st Qu.:0.0000  \n",
+       " Median :1.000    Median : 4.000   Median :1.0000  \n",
+       " Mean   :1.651    Mean   : 5.809   Mean   :0.8699  \n",
+       " 3rd Qu.:4.000    3rd Qu.: 8.000   3rd Qu.:2.0000  \n",
+       " Max.   :5.000    Max.   :21.000   Max.   :2.0000  \n",
+       "                                                   "
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "#limpieza de datos\n",
+    "datos<-data.frame(datos)\n",
+    "datos1<-subset(datos,r_def==0)#depuración1: se depuraron los datos para eliminar entrevistas no completas. Esto es, r_def=0\n",
+    "prueba1<-sum(datos1$r_def)==0 #prueba de que depuración1 se realizó correctamente\n",
+    "datos1<-subset(datos1,eda>15) #depuración2:se depuraron los encuestados que no están en edad de trabajar\n",
+    "                                #el conjunto de datos final comprende 18 datos descritos en la variable dict\n",
+    "prueba1<-sum(datos1$eda)==0 #prueba de que depuración2 se realizó correctamente\n",
+    "datos1<-subset(datos1,clase1!=0)#depuración3: se depuraron los datos donde no está especificado si es PEA oPNEA\n",
+    "prueba1<-sum(datos1$clase1)==0 #prueba de que depuración1 se realizó correctamente\n",
+    "head1<-c(\"PEA\",\"pob_ocupada\",\"entidad\",\"sexo\",\"edad\",\"escolaridad_grado\",\"edo_civil\",\"num_hijos\",\"con_experiencia\",\"subocupado\",\"horas_trabajadas\",\"ingreso_mensual\",\"seguridad_social\",\"actividad_SCIAN\",\"sector_informal\")\n",
+    "datos3<-select(datos1,PEA=clase1,pob_ocupada=clase3,entidad=ent,sexo=sex,edad=eda,escolaridad_gdo=cs_p13_1,edo_conyugal=e_con,num_hijos=n_hij,con_experiencia=d_ant_lab,subocupado=sub_o,horas_trabajadas=hrsocup,ingreso_mensual=ingocup,seguridad_social=imssissste,actividad_SCIAN=scian,sector_informal=emp_ppal)\n",
+    "\n",
+    "summary(datos3)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "35fd0e1c-a17d-4d7b-9168-98b75dc4ecad",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "4.2.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
